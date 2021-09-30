@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as dat from "dat.gui";
+import fragmentShader from "../shaders/fragment.glsl";
+import vertexShader from "../shaders/vertex.glsl";
 
 export default class Canvas {
   constructor() {
@@ -8,6 +11,7 @@ export default class Canvas {
     this.canvas = document.querySelector("canvas.webgl");
     this.scene = new THREE.Scene();
     this.textureLoader = new THREE.TextureLoader();
+    this.loader = new GLTFLoader();
 
     this.sizes = {
       width: window.innerWidth,
@@ -17,27 +21,43 @@ export default class Canvas {
     this.createCamera();
     this.createRenderer();
     this.createMesh();
+
+    this.loader.load("model.glb", (gltf) => {
+      gltf.scene.traverse((child) => {
+        if (child.isMesh) {
+          child.scale.set(2, 2, 2);
+          child.geometry.center();
+          child.material = this.material;
+        }
+      });
+      this.scene.add(gltf.scene);
+    });
   }
 
   createCamera() {
     this.camera = new THREE.PerspectiveCamera(
-      75,
+      70,
       this.sizes.width / this.sizes.height,
-      0.1,
-      100
+      0.001,
+      1000
     );
-    this.camera.position.set(0.25, -0.25, 1);
+    this.camera.position.set(0, 0, 2);
     this.scene.add(this.camera);
   }
 
   createRenderer() {
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
+      alpha: true,
     });
     this.renderer.setSize(this.sizes.width, this.sizes.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setClearColor(0xeeeeee, 0);
+    this.renderer.sRGBEncoding = true;
+    this.renderer.physicallyCorrectLights = true;
 
     this.controls = new OrbitControls(this.camera, this.canvas);
+    // this.controls.enabled = false;
     this.controls.enableDamping = true;
   }
 
@@ -46,11 +66,15 @@ export default class Canvas {
     this.geometry = new THREE.PlaneGeometry(1, 1, 100, 100);
 
     // Material
-    this.material = new THREE.MeshBasicMaterial();
+    this.material = new THREE.ShaderMaterial({
+      fragmentShader,
+      vertexShader,
+      // transparent: false,
+    });
 
     // Mesh
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
-    this.scene.add(this.mesh);
+    // this.mesh = new THREE.Mesh(this.geometry, this.material);
+    // this.scene.add(this.mesh);
   }
 
   onResize() {
@@ -66,7 +90,7 @@ export default class Canvas {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   }
 
-  render() {
+  render(time) {
     this.controls.update();
 
     // Render
