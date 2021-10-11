@@ -6,6 +6,5 @@ void main () {
 
   gl_Position = projectedPosition;
 
-  vNormal = normal;
   vUv = uv;
 }

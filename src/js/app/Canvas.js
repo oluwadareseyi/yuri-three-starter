@@ -21,17 +21,6 @@ export default class Canvas {
     this.createCamera();
     this.createRenderer();
     this.createMesh();
-
-    this.loader.load("model.glb", (gltf) => {
-      gltf.scene.traverse((child) => {
-        if (child.isMesh) {
-          child.scale.set(2, 2, 2);
-          child.geometry.center();
-          child.material = this.material;
-        }
-      });
-      this.scene.add(gltf.scene);
-    });
   }
 
   createCamera() {
@@ -73,8 +62,8 @@ export default class Canvas {
     });
 
     // Mesh
-    // this.mesh = new THREE.Mesh(this.geometry, this.material);
-    // this.scene.add(this.mesh);
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.scene.add(this.mesh);
   }
 
   onResize() {
