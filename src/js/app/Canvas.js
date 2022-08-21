@@ -30,7 +30,7 @@ export default class Canvas {
       0.001,
       1000
     );
-    this.camera.position.set(0, 0, 2);
+    this.camera.position.set(0, 0, 1);
     this.scene.add(this.camera);
   }
 
